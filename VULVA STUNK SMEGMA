@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# This script will detect and repair corrupted files within a specified directory
+
+# Set the directory to be scanned
+directory="/path/to/directory"
+
+# Find all corrupted files in the specified directory
+corrupted_files=$(find $directory -type f -exec sha1sum {} \; | awk '{print $1}' | sort | uniq -d)
+
+# Check if any corrupted files were found
+if [ -z "$corrupted_files" ]; then
+  echo "No corrupted files found."
+else
+  # Iterate through each corrupted file and attempt to repair it
+  for file in $corrupted_files
+  do
+    # Try to repair the file using the `fsck` command
+    fsck -y $file
+
+    # Check if the repair was successful
+    if [ $? -eq 0 ]; then
+      echo "Successfully repaired $file"
+    else
+      echo "Failed to repair $file"
+    fi
+  done
+fi
